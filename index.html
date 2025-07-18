@@ -1,185 +1,62 @@
-<!DOCTYPE html><html lang="en"><head>
-<meta charset="utf-8">
-  <title>Heroku Deployment</title>
-  <link rel="stylesheet" href="css/all.min.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Auto Deploy to Render</title>
   <style>
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      color: #fff;
-      background: linear-gradient(45deg, #ff0040, #8c00ff, #0044ff, #00c6ff, #00ff92, #ffeb00, #ff7700);
-      background-size: 400% 400%;
-      animation: gradientAnimation 6s infinite;
-    }
-
-    @keyframes gradientAnimation {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
-    .container {
+      font-family: sans-serif;
       text-align: center;
-      background: rgba(0, 0, 0, 0.8);
       padding: 50px;
-      width: 500px;
-      border-radius: 20px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-      animation: scaleUp 1.5s ease-in-out;
+      background: #f4f4f4;
     }
 
-    .input {
-      width: 100%;
-      padding: 15px;
-      font-size: 17px;
-      color: #fff;
-      border: 2px solid #555;
-      border-radius: 10px;
-      margin-top: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      transition: 0.3s;
-    }
-
-    .input:focus {
-      border-color: #00ff92;
-      outline: none;
-      box-shadow: 0 0 10px #00ff92;
-    }
-
-    .button {
-      width: 100%;
-      border: none;
-      padding: 15px;
+    button {
+      padding: 15px 30px;
       font-size: 18px;
-      font-weight: bold;
-      color: #fff;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 20px;
-      background: linear-gradient(45deg, #ff0040, #8c00ff, #0044ff);
-      transition: 0.5s;
-    }
-
-    .button:hover {
-      background: linear-gradient(45deg, #00ff92, #ffeb00, #ff7700);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    }
-
-    .fork-section {
-      margin-top: 20px;
-      display: none;
-    }
-
-    .fork-button {
-      padding: 15px;
-      font-size: 16px;
-      font-weight: bold;
-      color: white;
       border: none;
-      background-color: #ff7700;
-      border-radius: 10px;
+      background-color: #0099ff;
+      color: white;
+      border-radius: 8px;
       cursor: pointer;
-      text-decoration: none;
     }
 
-    .fork-button:hover {
-      background-color: #ff0040;
+    button:hover {
+      background-color: #007acc;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
     }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h2>Welcome User</h2>
-    <form onsubmit="return handleUsernameInput();">
-      <input placeholder="Enter Your GitHub Username" class="input" id="githubUsername" type="text">
-      <div id="passwordSection" style="display: none;">
-        <input placeholder="Enter Password" class="input" id="passwordInput" type="password">
-      </div>
-      <button class="button" type="submit">Deploy to Heroku</button>
-    </form>
-    <div id="statusMessage" style="color: yellow; font-weight: bold; margin-top: 20px;"></div>
-    <div id="forkSection" class="fork-section">
-      <p>Make sure you have the latest forked version of the TOHID-AI repository.</p>
-      <a href="https://github.com/Tohidkhan6332/TOHID-AI/fork" target="_blank" class="fork-button">Fork TOHID-AI Repository</a>
-    </div>
-  </div>
+
+  <h1>Auto Deploy to Render</h1>
+  <button onclick="triggerDeploy()">Deploy Now</button>
+  <div id="status"></div>
+
   <script>
-    const correctPassword = "shoro786";
+    async function triggerDeploy() {
+      const status = document.getElementById("status");
+      status.textContent = "Triggering deploy...";
 
-    async function doesGitHubRepoExist(owner, repo) {
-      const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
       try {
-        const response = await fetch(apiUrl);
-        return response.status === 200;
+        const response = await fetch("https://api.render.com/deploy/srv-d1svsaidbo4c73fp8lk0?key=vSxPyqoe9H0", {
+          method: "POST"
+        });
+
+        if (response.ok) {
+          status.textContent = "✅ Deploy triggered successfully!";
+        } else {
+          status.textContent = "❌ Failed to trigger deploy.";
+        }
       } catch (error) {
-        console.error(`Error checking GitHub repository: ${error.message}`);
-        return false;
-      }
-    }
-
-    function handleUsernameInput() {
-      const usernameInput = document.getElementById("githubUsername");
-      const username = usernameInput.value.trim();
-      const passwordSection = document.getElementById("passwordSection");
-      const passwordInput = document.getElementById("passwordInput");
-      const statusMessage = document.getElementById("statusMessage");
-      const forkSection = document.getElementById("forkSection");
-
-      if (!username) {
-        statusMessage.textContent = "Please enter a valid GitHub username!";
-        return false;
-      }
-
-      if (username === "Tohidkhan6332") {
-        passwordSection.style.display = "block";
-
-        if (!passwordInput.value) {
-          statusMessage.textContent = "Please enter the password.";
-          return false;
-        }
-
-        if (passwordInput.value !== correctPassword) {
-          statusMessage.textContent = "Incorrect password. Please try again.";
-          return false;
-        }
-
-        statusMessage.textContent = "";
-      }
-
-      checkAndDeploy(username);
-      return false;
-    }
-
-    async function checkAndDeploy(username) {
-      const repoName = "TOHID-AI";
-      const statusMessage = document.getElementById("statusMessage");
-      const forkSection = document.getElementById("forkSection");
-
-      const repoExists = await doesGitHubRepoExist(username, repoName);
-
-      if (repoExists) {
-        const herokuURL = `https://dashboard.heroku.com/new-app?template=https://github.com/${username}/${repoName}`;
-        window.location.href = herokuURL;
-      } else {
-        statusMessage.textContent = "Repository not found. Please fork the TOHID-AI repository.";
-        forkSection.style.display = "block";
+        status.textContent = `❌ Error: ${error.message}`;
       }
     }
   </script>
 
-
-
-</body></html>
+</body>
+</html>
